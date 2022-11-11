@@ -6,7 +6,7 @@ require linux-rockchip.inc
 
 inherit freeze-rev local-git
 
-SRCREV = "8f689d7e9a6d4efe04558f1b1e47031cd766d549"
+SRCREV = "57dbc9beb96b5ebcdb7cc0a19d797bec0142ac11"
 SRC_URI = " \
 	git://github.com/engicam-stable/linux-engicam-rockchip.git;protocol=https;branch=linux-5.15.y; \
 	file://${THISDIR}/files/cgroups.cfg \

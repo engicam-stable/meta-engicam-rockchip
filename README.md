@@ -70,11 +70,11 @@ BBLAYERS ?= " \
 To enable a particular machine, you need to add a MACHINE line naming the BSP to the local.conf file:
 
 ```makefile
-  MACHINE = "px30-icore"
+  MACHINE = "px30-icore-starterkit"
   DISTRO_FEATURES:remove += " x11"
 ```
 
-All supported machines can be found in meta-engicam-rockchip/conf/machine.
+All supported machines can be found in **meta-engicam-rockchip/conf/machine**.
 
 ### II. Building meta-engicam-rockchip BSP Layers
 
@@ -97,3 +97,4 @@ $ sudo dd if=engicam-image-weston-px30-icore.wic of=/dev/sdb bs=64M && sync
 The following undergo regular basic testing with their respective MACHINE types.
 
 * px30 icore starterkit 2.0 board
+* px30 icore c.touch 2.0 board + AMP 10.1 inch Display

@@ -12,7 +12,7 @@ LIC_FILES_CHKSUM = "file://Licenses/README;md5=a2c678cfd4a4d97135585cad908541c6"
 
 inherit freeze-rev local-git
 
-SRCREV = "42d9c2d34ba3ddc117551568c2d35174736b23d0"
+SRCREV = "02da4e927ae7163e6619989b3cdb6134f6565467"
 SRCREV_rkbin = "6a9b8d73ac429bbdf0fc7c4c20786cc59c329423"
 SRC_URI = " \
 	git://github.com/engicam-stable/u-boot-engicam-rockchip.git;protocol=https;branch=2017.09; \
@@ -76,7 +76,7 @@ uart baudrate=115200
 
 end" > ../rkbin/tools/ddrbin_param.txt
 
-	../rkbin/tools/ddrbin_tool ../rkbin/tools/ddrbin_param.txt ../rkbin/bin/rk33/px30_ddr_333MHz_v1.16.bin
+	../rkbin/tools/ddrbin_tool ../rkbin/tools/ddrbin_param.txt ../rkbin/bin/rk33/px30_ddr_333MHz_v2.07.bin
 
 	if [ -e "${B}/prebuilt/${UBOOT_BINARY}" ]; then
 		bbnote "${PN}: Using prebuilt images."

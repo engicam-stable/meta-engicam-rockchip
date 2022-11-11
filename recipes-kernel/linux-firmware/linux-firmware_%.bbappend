@@ -13,11 +13,6 @@ SRC_URI:append = " \
 	file://firmware/rockchip/dptx.bin \
 "
 
-PACKAGES:prepend = " \
-	${PN}-rk-cdndp \
-	${PN}-rockchip-license \
-"
-
 LICENSE:append = " & LICENSE.rockchip"
 LIC_FILES_CHKSUM:append = " file://${RKBASE}/licenses/LICENSE.rockchip;md5=d63890e209bf038f44e708bbb13e4ed9"
 LICENSE:${PN}-rk-cdndp = "LICENSE.rockchip"
