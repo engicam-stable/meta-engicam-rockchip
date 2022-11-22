@@ -1,7 +1,6 @@
 SUMMARY = "A very basic Wayland image with a terminal"
 
 IMAGE_FEATURES += "splash package-management ssh-server-dropbear hwcodecs weston"
-
 LICENSE = "MIT"
 
 inherit core-image
@@ -18,9 +17,7 @@ serialtools \
 minicom \
 packagegroup-core-tools-testapps \
 packagegroup-base \
-packagegroup-base-wifi \
 packagegroup-core-weston \
 px30-brcm \
 alsa-utils-scripts \
-alsa-lib \
 "

@@ -10,3 +10,7 @@ MALI_GPU := "bifrost-g31"
 MALI_VERSION := "g2p0"
 
 RK_ISP_VERSION := "1"
+
+DISTRO_FEATURES += " pam wayland opengl"
+INIT_MANAGER = "systemd"
+BBMASK = "meta-rockchip/recipes-core/systemd/"
