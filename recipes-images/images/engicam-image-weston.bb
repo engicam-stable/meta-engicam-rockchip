@@ -20,4 +20,5 @@ packagegroup-base \
 packagegroup-core-weston \
 px30-brcm \
 alsa-utils-scripts \
+evtest \
 "
