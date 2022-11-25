@@ -41,6 +41,9 @@ In order to build an image with BSP support for a given release, you need to dow
 ~/yocto $ cd poky
 ~/yocto/poky $ git clone https://github.com/openembedded/meta-openembedded.git -b honister
 ~/yocto/poky $ git clone https://github.com/JeffyCN/meta-rockchip.git -b honister
+~/yocto/poky $ cd meta-rockchip
+~/yocto/poky/meta-rockchip $ git checkout 7b13a4aecadcde002a1af9a246813c61ab6cc559
+~/yocto/poky/meta-rockchip $ cd ..
 ~/yocto/poky $ git clone https://github.com/engicam-stable/meta-engicam-rockchip.git -b honister
 ```
 
