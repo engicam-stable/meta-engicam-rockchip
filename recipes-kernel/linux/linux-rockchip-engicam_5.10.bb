@@ -4,18 +4,18 @@
 require recipes-kernel/linux/linux-yocto.inc
 require linux-rockchip.inc
 
-inherit freeze-rev local-git
+inherit local-git
 
-SRCREV = "19da063c0261443f635286c14d9d1db1e8e64d97"
+SRCREV = "b6c49719990a22f380bb1b229001af866806a35c"
 SRC_URI = " \
-	git://github.com/engicam-stable/linux-engicam-rockchip.git;protocol=https;branch=linux-5.15.y; \
+	git://git.engicam.com/external/linux-rockchip-engicam-5.10.git;protocol=https;branch=develop-5.10; \
 	file://${THISDIR}/files/cgroups.cfg \
 "
 
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 KERNEL_VERSION_SANITY_SKIP = "1"
-LINUX_VERSION ?= "5.15.69"
+LINUX_VERSION ?= "5.10"
 
 SRC_URI:append = " ${@bb.utils.contains('IMAGE_FSTYPES', 'ext4', \
 		   'file://${THISDIR}/files/ext4.cfg', \
