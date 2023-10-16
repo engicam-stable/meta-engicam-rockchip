@@ -63,6 +63,13 @@ Now you need to edit the **conf/local.conf** file inserting your machine, to che
   MACHINE = "px30-icore-starterkit"
 ```
 
+### GSTREMER commercial flags:
+
+**conf/local.conf**
+
+```
+LICENSE_FLAGS_ACCEPTED = "commercial"
+```
 
 ### II. Building meta-rockchip BSP Layers
 

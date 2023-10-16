@@ -30,6 +30,11 @@ evtest \
 bluez5 \
 iw \
 gstreamer1.0 \
+gstreamer1.0-plugins-bad \
+gstreamer1.0-plugins-base \
+gstreamer1.0-plugins-good \
+gstreamer1.0-rockchip \
+gst-examples \
 strace \
 "
 
