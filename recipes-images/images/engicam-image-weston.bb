@@ -36,6 +36,7 @@ gstreamer1.0-plugins-good \
 gstreamer1.0-rockchip \
 gst-examples \
 strace \
+gptfdisk \
 "
 
 fix_bcm43430() { 

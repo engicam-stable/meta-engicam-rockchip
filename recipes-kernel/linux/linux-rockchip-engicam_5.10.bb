@@ -6,7 +6,7 @@ require linux-rockchip.inc
 
 inherit local-git
 
-SRCREV = "19683d86bb46f02c2fe7775c9b16add105f50160"
+SRCREV = "72f3fb76190957bcf96ade51850b821371115d6b"
 SRC_URI = " \
 	git://git.engicam.com/external/linux-rockchip-engicam-5.10.git;protocol=https;branch=develop-5.10; \
 	file://${THISDIR}/files/cgroups.cfg \
