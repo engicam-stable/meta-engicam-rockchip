@@ -1,0 +1,32 @@
+From 369285a7d2379a8bdae05b9ee93204e0198257b8 Mon Sep 17 00:00:00 2001
+From: Matteo Lisi <matteo.lisi@engicam.com>
+Date: Mon, 11 Aug 2025 16:32:25 +0200
+Subject: [PATCH 3/9] added TCS4525_CHIP_ID_08 to fan53555.c driver
+
+---
+ drivers/regulator/fan53555.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/regulator/fan53555.c b/drivers/regulator/fan53555.c
+index e9db8598cbf2..ef4f85171ebc 100644
+--- a/drivers/regulator/fan53555.c
++++ b/drivers/regulator/fan53555.c
+@@ -92,6 +92,7 @@ enum {
+ 
+ enum {
+ 	TCS4525_CHIP_ID_12 = 12,
++	TCS4525_CHIP_ID_08 = 8,
+ };
+ 
+ enum {
+@@ -358,6 +359,7 @@ static int fan53526_voltages_setup_tcs(struct fan53555_device_info *di)
+ {
+ 	switch (di->chip_id) {
+ 	case TCS4525_CHIP_ID_12:
++	case TCS4525_CHIP_ID_08:
+ 	case TCS4526_CHIP_ID_00:
+ 		di->slew_reg = TCS4525_TIME;
+ 		di->slew_mask = TCS_SLEW_MASK;
+-- 
+2.39.5
+

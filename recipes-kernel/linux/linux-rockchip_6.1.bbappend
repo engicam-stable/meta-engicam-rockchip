@@ -1,0 +1,11 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "file://0001-added-mxl-8611x-driver.patch"
+SRC_URI += "file://0002-added-edt-ft5x26-touch-driver.patch"
+SRC_URI += "file://0003-added-TCS4525_CHIP_ID_08-to-fan53555.c-driver.patch"
+SRC_URI += "file://0004-removed-clk_disable_unprepare-on-sgtl-probe-function.patch"
+SRC_URI += "file://0005-imported-ov5640.c-driver-from-rockchip-externel-kern.patch"
+SRC_URI += "file://0006-added-rk3568-icore-support.patch"
+SRC_URI += "file://0007-added-rk3568-vboard-support.patch"
+SRC_URI += "file://0008-updated-dtbs-Makefile.patch"
+SRC_URI += "file://0009-added-engicam-logo.patch"

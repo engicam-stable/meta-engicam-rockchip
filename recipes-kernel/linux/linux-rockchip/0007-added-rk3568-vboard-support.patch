@@ -1,0 +1,1106 @@
+From b8fe4a3ad4bf370e54e8ea01d145c7ad3655dbea Mon Sep 17 00:00:00 2001
+From: Matteo Lisi <matteo.lisi@engicam.com>
+Date: Mon, 11 Aug 2025 16:35:16 +0200
+Subject: [PATCH 7/9] added rk3568-vboard support
+
+---
+ .../boot/dts/rockchip/rk3568-vboard-linux.dts | 987 ++++++++++++++++++
+ arch/arm64/configs/rockchip_linux_defconfig   |  23 +-
+ 2 files changed, 1008 insertions(+), 2 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3568-vboard-linux.dts
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3568-vboard-linux.dts b/arch/arm64/boot/dts/rockchip/rk3568-vboard-linux.dts
+new file mode 100644
+index 000000000000..e1250522be4e
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3568-vboard-linux.dts
+@@ -0,0 +1,987 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2020 Rockchip Electronics Co., Ltd.
++ *
++ */
++
++/dts-v1/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++#include "rk3568.dtsi"
++#include "rk3568-linux.dtsi"
++#include <dt-bindings/display/rockchip_vop.h>
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/pwm/pwm.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/input/rk-input.h>
++#include <dt-bindings/display/drm_mipi_dsi.h>
++#include <dt-bindings/sensor-dev.h>
++#include <dt-bindings/display/media-bus-format.h>
++
++
++/ {
++	model = "RK3568 vboard";
++	compatible = "rockchip,rk3568-vboard", "rockchip,rk3568";
++
++	aliases {
++		ethernet0 = &gmac0;
++		ethernet1 = &gmac1;
++		rtc1 = &rk809;
++	};
++
++	gmac0_clkin: external-gmac0-clock {
++		compatible = "fixed-clock";
++		clock-frequency = <125000000>;
++		clock-output-names = "gmac0_clkin";
++		#clock-cells = <0>;
++	};
++
++	gmac1_clkin: external-gmac1-clock {
++		compatible = "fixed-clock";
++		clock-frequency = <125000000>;
++		clock-output-names = "gmac1_clkin";
++		#clock-cells = <0>;
++	};
++
++	vcc2v5_sys: vcc2v5-ddr {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc2v5-sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <2500000>;
++		regulator-max-microvolt = <2500000>;
++		vin-supply = <&vcc3v3_sys>;
++	};
++
++	vcc3v3_vga: vcc3v3-vga {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_vga";
++		regulator-always-on;
++		regulator-boot-on;
++		gpio = <&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++		vin-supply = <&vcc3v3_sys>;
++	};
++
++	emmc_enable: emmc-enable {
++		compatible = "regulator-fixed";
++		regulator-name = "emmc_enable";
++		regulator-always-on;
++		regulator-boot-on;
++		gpio = <&gpio4 RK_PD2 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&emmc_enable_pin>;
++		enable-active-low;
++	};	
++
++	vcc3v3_bu: vcc3v3-bu {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_bu";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vcc5v0_sys>;
++	};
++
++	leds: gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 =<&leds_gpio>;
++
++		led@1 {
++			gpios = <&gpio0 19 GPIO_ACTIVE_HIGH>;
++			label = "SYS_RUN";
++			linux,default-trigger = "heartbeat";				
++		};
++	};
++
++	dc_5v: dc-5v {
++		compatible = "regulator-fixed";
++		regulator-name = "dc_5v";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++	};
++
++	hdmi_sound: hdmi-sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,mclk-fs = <128>;
++		simple-audio-card,name = "rockchip,hdmi";
++		status = "disabled";
++
++		simple-audio-card,cpu {
++				sound-dai = <&i2s0_8ch>;
++		};
++		simple-audio-card,codec {
++				sound-dai = <&hdmi>;
++		};
++	};
++
++	rk809_sound: rk809-sound {
++		status = "okay";
++		compatible = "rockchip,multicodecs-card";
++		rockchip,card-name = "rockchip-rk809";
++		//hp-det-gpio = <&gpio3 RK_PC3 GPIO_ACTIVE_LOW>;
++		rockchip,format = "i2s";
++		rockchip,mclk-fs = <256>;
++		rockchip,cpu = <&i2s1_8ch>;
++		rockchip,codec = <&rk809_codec>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&hp_det>;
++	};
++
++	vcc3v3_sys: vcc3v3-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&dc_5v>;
++	};
++
++	vcc5v0_sys: vcc5v0-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&dc_5v>;
++	};
++
++	vcc5v0_usb: vcc5v0-usb {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_usb";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&dc_5v>;
++	};
++
++	vcc5v0_host: vcc5v0-host-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_host";
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		gpio = <&gpio0 RK_PA6 GPIO_ACTIVE_HIGH>;
++		vin-supply = <&vcc5v0_usb>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&vcc5v0_host_en>;
++	};
++
++	vcc5v0_otg: vcc5v0-otg-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_otg";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		gpio = <&gpio0 RK_PA5 GPIO_ACTIVE_HIGH>;
++		vin-supply = <&vcc5v0_usb>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&vcc5v0_otg_en>;
++	};
++
++	vdda_codec: vdda-codec {
++		compatible = "regulator-fixed";
++		regulator-name = "vdda_codec";
++		regulator-boot-on;
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&dc_5v>;
++	};
++
++	vddd_codec: vddd-codec {
++		compatible = "regulator-fixed";
++		regulator-name = "vddd_codec";
++		regulator-boot-on;
++		regulator-min-microvolt = <1600000>;
++		regulator-max-microvolt = <1600000>;
++		vin-supply = <&dc_5v>;
++	};
++
++	vcc3v3_lcd0_n: vcc3v3-lcd0-n {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_lcd0_n";
++		regulator-boot-on;
++		regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++
++	vcc3v3_pcie: vcc3v3-pcie {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_pcie";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&dc_5v>;
++	};
++};
++
++&pwm14{
++	status = "okay";
++	pinctrl-names = "active";
++	pinctrl-0 = <&pwm14m1_pins>;
++};
++
++&route_lvds {
++	status = "disabled";
++	connect = <&vp1_out_lvds>;
++};
++
++&lvds0 {
++	status = "disabled";
++};
++
++&lvds0_in_vp1 {
++	status = "disabled";
++};
++
++&lvds1 {
++	status = "disabled";
++};
++
++&rgb_in_vp2 {
++	status = "disabled";
++};
++
++&bus_npu {
++	bus-supply = <&vdd_logic>;
++	pvtm-supply = <&vdd_cpu>;
++	status = "okay";
++};
++
++&cpu0 {
++	cpu-supply = <&vdd_cpu>;
++};
++
++&dfi {
++	status = "okay";
++};
++
++&dmc {
++	center-supply = <&vdd_logic>;
++	status = "okay";
++};
++
++&gpu {
++	mali-supply = <&vdd_gpu>;
++	status = "okay";
++};
++
++&hdmi {
++	status = "okay";
++	rockchip,phy-table =
++		<92812500  0x8009 0x0000 0x0270>,
++		<165000000 0x800b 0x0000 0x026d>,
++		<185625000 0x800b 0x0000 0x01ed>,
++		<297000000 0x800b 0x0000 0x01ad>,
++		<594000000 0x8029 0x0000 0x0088>,
++		<000000000 0x0000 0x0000 0x0000>;
++};
++
++&hdmi_in_vp0 {
++	status = "okay";
++};
++
++&hdmi_in_vp1 {
++	status = "disabled";
++};
++
++&hdmi_sound {
++	status = "okay";
++};
++
++&route_hdmi {
++	status = "okay";
++	connect = <&vp0_out_hdmi>;
++};
++
++&i2c0 {
++	status = "okay";
++
++	vdd_cpu: tcs4525@60 {
++		reg = <0x60>;
++		compatible = "fcs,fan53555";
++		regulator-name = "fan53555";
++		regulator-min-microvolt = <600000>;
++		regulator-max-microvolt = <1230000>;
++		vsel-gpios = <&gpio0 RK_PA1 GPIO_ACTIVE_HIGH>;
++		vin-supply = <&vcc5v0_sys>;
++		fcs,suspend-voltage-selector = <1>;
++		regulator-ramp-delay = <1000>;
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-initial-state = <3>;
++			regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++
++	rk809: pmic@20 {
++		compatible = "rockchip,rk809";
++		reg = <0x20>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
++
++		pinctrl-names = "default", "pmic-sleep",
++				"pmic-power-off", "pmic-reset";
++		pinctrl-0 = <&pmic_int>;
++		pinctrl-1 = <&soc_slppin_slp>, <&rk817_slppin_slp>;
++		pinctrl-2 = <&soc_slppin_gpio>, <&rk817_slppin_pwrdn>;
++		pinctrl-3 = <&soc_slppin_gpio>, <&rk817_slppin_rst>;
++
++		rockchip,system-power-controller;
++		wakeup-source;
++		#clock-cells = <1>;
++		clock-output-names = "rk808-clkout1", "rk808-clkout2";
++		//fb-inner-reg-idxs = <2>;
++		/* 1: rst regs (default in codes), 0: rst the pmic */
++		pmic-reset-func = <0>;
++		/* not save the PMIC_POWER_EN register in uboot */
++		not-save-power-en = <1>;
++
++		vcc1-supply = <&vcc5v0_sys>;
++		vcc2-supply = <&vcc5v0_sys>;
++		vcc3-supply = <&vcc5v0_sys>;
++		vcc4-supply = <&vcc5v0_sys>;
++		vcc5-supply = <&vcc3v3_sys>;
++		vcc6-supply = <&vcc3v3_sys>;
++		vcc7-supply = <&vcc3v3_sys>;
++		vcc8-supply = <&vcc3v3_sys>;
++		vcc9-supply = <&vcc3v3_sys>;
++
++		pwrkey {
++			status = "okay";
++		};
++
++		pinctrl_rk8xx: pinctrl_rk8xx {
++			gpio-controller;
++			#gpio-cells = <2>;
++
++			rk817_slppin_null: rk817_slppin_null {
++				pins = "gpio_slp";
++				function = "pin_fun0";
++			};
++
++			rk817_slppin_slp: rk817_slppin_slp {
++				pins = "gpio_slp";
++				function = "pin_fun1";
++			};
++
++			rk817_slppin_pwrdn: rk817_slppin_pwrdn {
++				pins = "gpio_slp";
++				function = "pin_fun2";
++			};
++
++			rk817_slppin_rst: rk817_slppin_rst {
++				pins = "gpio_slp";
++				function = "pin_fun3";
++			};
++		};
++
++		regulators {
++			vdd_logic: DCDC_REG1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <500000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-init-microvolt = <900000>;
++				regulator-ramp-delay = <6001>;
++				regulator-initial-mode = <0x2>;
++				regulator-name = "vdd_logic";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_gpu: DCDC_REG2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <500000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-init-microvolt = <900000>;
++				regulator-ramp-delay = <6001>;
++				regulator-initial-mode = <0x2>;
++				regulator-name = "vdd_gpu";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_ddr: DCDC_REG3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-initial-mode = <0x2>;
++				regulator-name = "vcc_ddr";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++				};
++			};
++
++			vdd_npu: DCDC_REG4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <500000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-init-microvolt = <900000>;
++				regulator-ramp-delay = <6001>;
++				regulator-initial-mode = <0x2>;
++				regulator-name = "vdd_npu";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdda0v9_image: LDO_REG1 {
++				regulator-boot-on;
++				regulator-always-on;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-name = "vdda0v9_image";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdda_0v9: LDO_REG2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-name = "vdda_0v9";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdda0v9_pmu: LDO_REG3 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-name = "vdda0v9_pmu";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <900000>;
++				};
++			};
++
++			vccio_acodec: LDO_REG4 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3000000>;
++				regulator-name = "vccio_acodec";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vccio_sd: LDO_REG5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-name = "vccio_sd";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc3v3_pmu: LDO_REG6 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-name = "vcc3v3_pmu";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <3300000>;
++				};
++			};
++
++			vcca_1v8: LDO_REG7 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-name = "vcca_1v8";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcca1v8_pmu: LDO_REG8 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-name = "vcca1v8_pmu";
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vcca1v8_image: LDO_REG9 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-name = "vcca1v8_image";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_1v8: DCDC_REG5 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-name = "vcc_1v8";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_3v3: SWITCH_REG1 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-name = "vcc_3v3";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc3v3_sd: SWITCH_REG2 {
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-name = "vcc3v3_sd";
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++		};
++
++		rk809_codec: codec {
++			#sound-dai-cells = <1>;
++			compatible = "rockchip,rk809-codec", "rockchip,rk817-codec";
++			clocks = <&cru I2S1_MCLKOUT>;
++			clock-names = "mclk";
++			assigned-clocks = <&cru I2S1_MCLKOUT>, <&cru I2S1_MCLK_TX_IOE>;
++			assigned-clock-rates = <12288000>;
++			assigned-clock-parents = <&cru I2S1_MCLKOUT_TX>, <&cru I2S1_MCLKOUT_TX>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&i2s1m0_mclk>;
++			hp-volume = <20>;
++			spk-volume = <3>;
++			mic-in-differential;
++			status = "okay";
++		};
++	};
++};
++
++&i2s1_8ch {
++	status = "okay";
++	rockchip,clk-trcm = <1>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2s1m0_sclktx
++		     &i2s1m0_lrcktx
++		     &i2s1m0_sdi0
++		     &i2s1m0_sdo0>;
++};
++
++&iep {
++	status = "okay";
++};
++
++&iep_mmu {
++	status = "okay";
++};
++
++&jpegd {
++	status = "okay";
++};
++
++&jpegd_mmu {
++	status = "okay";
++};
++
++&mpp_srv {
++	status = "okay";
++};
++
++&pinctrl {
++	gpio-leds {
++			leds_gpio: leds-gpio {
++					rockchip,pins = <0 19 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++	};
++
++	emmc {
++		emmc_enable_pin: emmc-enable-pin {
++			rockchip,pins = <4 RK_PD2 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++	};
++
++	headphone {
++		hp_det: hp-det {
++			rockchip,pins = <3 RK_PC3 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++	};
++
++	pmic {
++		pmic_int: pmic_int {
++			rockchip,pins =
++				<0 RK_PA3 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++
++		soc_slppin_gpio: soc_slppin_gpio {
++			rockchip,pins =
++				<0 RK_PA2 RK_FUNC_GPIO &pcfg_output_low>;
++		};
++
++		soc_slppin_slp: soc_slppin_slp {
++			rockchip,pins =
++				<0 RK_PA2 1 &pcfg_pull_none>;
++		};
++
++		soc_slppin_rst: soc_slppin_rst {
++			rockchip,pins =
++				<0 RK_PA2 2 &pcfg_pull_none>;
++		};
++	};
++
++	usb {
++		vcc5v0_host_en: vcc5v0-host-en {
++			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		vcc5v0_otg_en: vcc5v0-otg-en {
++			rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
++
++&pmu_io_domains {
++	status = "okay";
++	pmuio2-supply = <&vcc3v3_pmu>;
++	vccio1-supply = <&vccio_acodec>;
++	vccio2-supply = <&vcc_1v8>;
++	vccio3-supply = <&vccio_sd>;
++	vccio4-supply = <&vcc_1v8>;
++	vccio5-supply = <&vcc_3v3>;
++	vccio6-supply = <&vcc_1v8>;
++	vccio7-supply = <&vcc_3v3>;
++};
++
++&rk_rga {
++	status = "okay";
++};
++
++&rkvdec {
++	status = "okay";
++};
++
++&rkvdec_mmu {
++	status = "okay";
++};
++
++&rkvenc {
++	venc-supply = <&vdd_logic>;
++	status = "okay";
++};
++
++&rkvenc_mmu {
++	status = "okay";
++};
++
++&rknpu {
++	rknpu-supply = <&vdd_npu>;
++	status = "okay";
++};
++
++&rknpu_mmu {
++	status = "okay";
++};
++
++&saradc {
++	status = "okay";
++	vref-supply = <&vcca_1v8>;
++};
++
++/* eMMC */
++&sdhci { 
++	bus-width = <8>;
++	mmc-hs200-1_8v;
++	broken-cd;
++	pinctrl-0 = <&emmc_bus8>, <&emmc_clk>, <&emmc_cmd>, <&emmc_datastrobe>, <&emmc_rstnout>;
++	pinctrl-names = "default";
++	vmmc-supply = <&vcc_1v8>;
++	vqmmc-supply = <&vcc_1v8>;
++	status = "okay";
++};
++
++/* sdcard */
++&sdmmc0 {
++	max-frequency = <150000000>;
++	no-sdio;
++	no-mmc;
++	bus-width = <4>;
++	cap-mmc-highspeed;
++	cap-sd-highspeed;
++	disable-wp;
++	sd-uhs-sdr104;
++	vmmc-supply = <&vcc_3v3>;
++	vqmmc-supply = <&vcc_3v3>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
++	status = "okay";
++};
++
++&spdif_8ch {
++	status = "disabled";
++};
++
++&tsadc {
++	status = "okay";
++};
++
++&u2phy0_host {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&u2phy0_otg {
++	vbus-supply = <&vcc5v0_otg>;
++	status = "okay";
++};
++
++&u2phy1_host {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&u2phy1_otg {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&usb2phy0 {
++	status = "okay";
++};
++
++&usb2phy1 {
++	status = "okay";
++};
++
++&usb_host0_ehci {
++	status = "okay";
++};
++
++&usb_host0_ohci {
++	status = "okay";
++};
++
++&usb_host1_ehci {
++	status = "okay";
++};
++
++&usb_host1_ohci {
++	status = "okay";
++};
++
++&usbdrd_dwc3 {
++	dr_mode = "host";
++	extcon = <&usb2phy0>;
++	status = "okay";
++};
++
++&usbdrd30 {
++	status = "okay";
++};
++
++&usbhost_dwc3 {
++	status = "okay";
++};
++
++&usbhost30 {
++	status = "okay";
++};
++
++&vad {
++	rockchip,audio-src = <&i2s1_8ch>;
++	rockchip,buffer-time-ms = <128>;
++	rockchip,det-channel = <0>;
++	rockchip,mode = <0>;
++};
++
++&vdpu {
++	status = "okay";
++};
++
++&vdpu_mmu {
++	status = "okay";
++};
++
++&vepu {
++	status = "okay";
++};
++
++&vepu_mmu {
++	status = "okay";
++};
++
++&vop {
++	status = "okay";
++	vop-supply = <&vdd_logic>;
++	assigned-clocks = <&cru DCLK_VOP0>, <&cru DCLK_VOP1>, <&cru DCLK_VOP2>;
++	assigned-clock-parents = <&pmucru PLL_HPLL>, <&cru PLL_VPLL>, <&cru PLL_GPLL>;
++};
++
++&vop_mmu {
++	status = "okay";
++};
++
++&combphy0_us {
++	status = "okay";
++};
++
++&combphy1_usq {
++	status = "okay";
++};
++
++&combphy2_psq {
++	status = "okay";
++};
++
++&gmac0 {
++	phy-mode = "rgmii";
++	clock_in_out = "input";
++
++        snps,reset-gpio = <&gpio2 RK_PD3 GPIO_ACTIVE_LOW>;
++	snps,reset-active-low;
++	snps,reset-delays-us = <0 20000 100000>;
++
++        assigned-clocks = <&cru SCLK_GMAC0_RX_TX>, <&cru SCLK_GMAC0>;
++        assigned-clock-parents = <&cru SCLK_GMAC0_RGMII_SPEED>, <&cru CLK_MAC0_2TOP>;
++
++        pinctrl-names = "default";
++        pinctrl-0 = <&gmac0_miim
++                     &gmac0_tx_bus2
++                     &gmac0_rx_bus2
++                     &gmac0_rgmii_clk
++                     &gmac0_rgmii_bus>;
++
++	tx_delay = <0x3c>;
++	rx_delay = <0x2f>;
++
++	phy-handle = <&rgmii_phy0>;
++	status = "okay";
++};
++
++&gmac1 {
++	phy-mode = "rgmii";
++	clock_in_out = "input";
++
++	snps,reset-gpio = <&gpio2 RK_PD1 GPIO_ACTIVE_LOW>;
++	snps,reset-active-low;
++	snps,reset-delays-us = <0 20000 100000>;
++
++        assigned-clocks = <&cru SCLK_GMAC1_RX_TX>, <&cru SCLK_GMAC1>;
++        assigned-clock-parents = <&cru SCLK_GMAC1_RGMII_SPEED>, <&cru CLK_MAC1_2TOP>;
++
++        pinctrl-names = "default";
++        pinctrl-0 = <&gmac1m1_miim
++                     &gmac1m1_tx_bus2
++                     &gmac1m1_rx_bus2
++                     &gmac1m1_rgmii_clk
++                     &gmac1m1_rgmii_bus>;
++
++        tx_delay = <0x4f>;
++        rx_delay = <0x26>;
++
++        phy-handle = <&rgmii_phy1>;
++        status = "okay";
++};
++
++&mdio0 {
++	rgmii_phy0: phy@1 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0x1>;
++	};
++};
++
++&mdio1 {
++	rgmii_phy1: phy@1 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0x1>;
++	};
++};
++
++&video_phy0 {
++	status = "okay";
++};
++
++&video_phy1 {
++	status = "disabled";
++};
++
++&pcie2x1 {	
++	status = "disabled";
++};
++
++&pcie30phy {
++	status = "disabled";
++};
++
++&pcie3x2 {
++	status = "disabled";
++};
++
++&uart0 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_xfer>;
++};
++
++&vp0 {
++	rockchip,plane-mask = <(
++				1 << ROCKCHIP_VOP2_CLUSTER0 | 1 << ROCKCHIP_VOP2_ESMART0 |
++				1 << ROCKCHIP_VOP2_CLUSTER1 | 1 << ROCKCHIP_VOP2_ESMART1 )>;
++	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART0>;
++	cursor-win-id = <ROCKCHIP_VOP2_ESMART1>;
++};
++
++&vp1 {
++	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_SMART0 | 1 << ROCKCHIP_VOP2_SMART1)>;
++	rockchip,primary-plane = <ROCKCHIP_VOP2_SMART0>;
++};
++
++&vp2 {
++	status = "disabled";
++};
++
++
++&sfc {
++	status = "disabled";
++};
++
++&sata2 {
++	status = "disabled";
++};
++
++&tsadc {
++        status = "okay";
++};
++
+diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
+index 9dbd820726d1..099a18f1382e 100644
+--- a/arch/arm64/configs/rockchip_linux_defconfig
++++ b/arch/arm64/configs/rockchip_linux_defconfig
+@@ -131,7 +131,10 @@ CONFIG_PCIEASPM_POWERSAVE=y
+ CONFIG_PCIEASPM_EXT=y
+ # CONFIG_VGA_ARB is not set
+ CONFIG_PCIE_ROCKCHIP_HOST=y
++CONFIG_PCIE_ROCKCHIP_EP=y
+ CONFIG_PCIE_DW_ROCKCHIP=y
++CONFIG_PCI_ENDPOINT=y
++CONFIG_PCI_ENDPOINT_CONFIGFS=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_DEBUG_DEVRES=y
+@@ -210,9 +213,18 @@ CONFIG_STMMAC_ETH=y
+ CONFIG_MOTORCOMM_PHY=y
+ CONFIG_ROCKCHIP_PHY=y
+ CONFIG_RK630_PHY=y
++CONFIG_MAXLINEAR_8611X_PHY=y
++CONFIG_CAN_ROCKCHIP=y
++CONFIG_CANFD_ROCKCHIP=y
+ CONFIG_CANFD_RK3576=y
+ CONFIG_USB_RTL8150=y
+ CONFIG_USB_RTL8152=y
++CONFIG_B43=y
++CONFIG_B43_SDIO=y
++CONFIG_B43_DEBUG=y
++CONFIG_B43LEGACY=y
++CONFIG_BRCMSMAC=y
++CONFIG_BRCMFMAC=m
+ CONFIG_WL_ROCKCHIP=y
+ CONFIG_WIFI_BUILD_MODULE=y
+ CONFIG_AP6XXX=m
+@@ -230,6 +242,8 @@ CONFIG_TOUCHSCREEN_ATMEL_MXT=y
+ CONFIG_TOUCHSCREEN_GSL3673=y
+ CONFIG_TOUCHSCREEN_GT1X=y
+ CONFIG_TOUCHSCREEN_ELAN=y
++CONFIG_TOUCHSCREEN_EDT_FT5X06=y
++CONFIG_TOUCHSCREEN_EDT_FT5X26=y
+ CONFIG_TOUCHSCREEN_USB_COMPOSITE=y
+ CONFIG_ROCKCHIP_REMOTECTL=y
+ CONFIG_ROCKCHIP_REMOTECTL_PWM=y
+@@ -253,7 +267,6 @@ CONFIG_TCG_TIS_I2C_INFINEON=y
+ CONFIG_I2C_CHARDEV=y
+ CONFIG_I2C_RK3X=y
+ CONFIG_I3C=y
+-CONFIG_ROCKCHIP_I3C_MASTER=y
+ CONFIG_SPI=y
+ CONFIG_SPI_BITBANG=y
+ CONFIG_SPI_ROCKCHIP=y
+@@ -264,6 +277,8 @@ CONFIG_PINCTRL_RK806=y
+ CONFIG_GPIO_SYSFS=y
+ CONFIG_GPIO_GENERIC_PLATFORM=y
+ CONFIG_GPIO_SYSCON=y
++CONFIG_GPIO_PCA953X=y
++CONFIG_GPIO_PCA953X_IRQ=y
+ CONFIG_POWER_RESET_GPIO=y
+ CONFIG_POWER_RESET_GPIO_RESTART=y
+ CONFIG_SYSCON_REBOOT_MODE=y
+@@ -328,6 +343,7 @@ CONFIG_VIDEO_OV13850=y
+ CONFIG_VIDEO_OV13855=y
+ CONFIG_VIDEO_OV4689=y
+ CONFIG_VIDEO_OV50C40=y
++CONFIG_VIDEO_OV5640=y
+ CONFIG_VIDEO_OV5695=y
+ CONFIG_VIDEO_OV7251=y
+ CONFIG_VIDEO_SC4336=y
+@@ -431,6 +447,7 @@ CONFIG_SND_SOC_RK_DSM=y
+ CONFIG_SND_SOC_RT5616=y
+ CONFIG_SND_SOC_RT5640=y
+ CONFIG_SND_SOC_RT5651=y
++CONFIG_SND_SOC_SGTL5000=y
+ CONFIG_SND_SOC_SPDIF=y
+ CONFIG_SND_SIMPLE_CARD=y
+ CONFIG_HID_BATTERY_STRENGTH=y
+@@ -498,11 +515,14 @@ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+ CONFIG_LEDS_GPIO=y
+ CONFIG_LEDS_IS31FL32XX=y
++CONFIG_LEDS_TRIGGERS=y
++CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_ROCKCHIP=y
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_HYM8563=y
+ CONFIG_RTC_DRV_RK808=y
++CONFIG_RTC_DRV_PCF8523=y
+ CONFIG_DMADEVICES=y
+ CONFIG_PL330_DMA=y
+ CONFIG_RK_DMABUF_DEBUG=y
+@@ -552,7 +572,6 @@ CONFIG_FIQ_DEBUGGER_CONSOLE_DEFAULT_ENABLE=y
+ CONFIG_FIQ_DEBUGGER_TRUST_ZONE=y
+ CONFIG_RK_CONSOLE_THREAD=y
+ CONFIG_ROCKCHIP_DEBUG=y
+-CONFIG_PM_DEVFREQ=y
+ CONFIG_DEVFREQ_GOV_PERFORMANCE=y
+ CONFIG_DEVFREQ_GOV_POWERSAVE=y
+ CONFIG_DEVFREQ_GOV_USERSPACE=y
+-- 
+2.39.5
+

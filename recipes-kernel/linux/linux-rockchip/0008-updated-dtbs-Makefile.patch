@@ -1,0 +1,23 @@
+From b67cea28063c9c2ba2e242f35e785bc25dcc8f3f Mon Sep 17 00:00:00 2001
+From: Matteo Lisi <matteo.lisi@engicam.com>
+Date: Mon, 11 Aug 2025 16:35:38 +0200
+Subject: [PATCH 8/9] updated dtbs Makefile
+
+---
+ arch/arm64/boot/dts/rockchip/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index 2846cce5836e..a8ed583c263b 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -332,3 +332,6 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb8-lp4x-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-rk806-single-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v11.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-icore-linux.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-vboard-linux.dtb
++
+-- 
+2.39.5
+

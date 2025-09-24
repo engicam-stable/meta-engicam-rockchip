@@ -1,0 +1,25 @@
+From 183c32149201f162e70c78e175fc571abdd7e138 Mon Sep 17 00:00:00 2001
+From: Matteo Lisi <matteo.lisi@engicam.com>
+Date: Mon, 11 Aug 2025 16:33:13 +0200
+Subject: [PATCH 4/9] removed clk_disable_unprepare on sgtl probe function
+
+---
+ sound/soc/codecs/sgtl5000.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/codecs/sgtl5000.c b/sound/soc/codecs/sgtl5000.c
+index a916f4619ea3..d0a7663ceb7a 100644
+--- a/sound/soc/codecs/sgtl5000.c
++++ b/sound/soc/codecs/sgtl5000.c
+@@ -1781,7 +1781,7 @@ static int sgtl5000_i2c_probe(struct i2c_client *client)
+ 	return 0;
+ 
+ disable_clk:
+-	clk_disable_unprepare(sgtl5000->mclk);
++	//clk_disable_unprepare(sgtl5000->mclk);
+ 
+ disable_regs:
+ 	regulator_bulk_disable(sgtl5000->num_supplies, sgtl5000->supplies);
+-- 
+2.39.5
+

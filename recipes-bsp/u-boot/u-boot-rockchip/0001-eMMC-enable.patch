@@ -1,0 +1,102 @@
+From 4c021b9bb4088f0d50fb911d2eb38ce4e0d3ffa0 Mon Sep 17 00:00:00 2001
+From: Engicam <support@engicam.com>
+Date: Thu, 5 Jun 2025 15:58:12 +0200
+Subject: [PATCH] eMMC enable
+
+---
+ arch/arm/mach-rockchip/rk3568/rk3568.c | 27 +++++++++++++++++++++++++-
+ configs/rk3568_defconfig               |  2 ++
+ env/Kconfig                            |  1 +
+ include/configs/evb_rk3568.h           |  2 ++
+ 4 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-rockchip/rk3568/rk3568.c b/arch/arm/mach-rockchip/rk3568/rk3568.c
+index ef6df66f5998..b8dbfbd42ee6 100644
+--- a/arch/arm/mach-rockchip/rk3568/rk3568.c
++++ b/arch/arm/mach-rockchip/rk3568/rk3568.c
+@@ -8,6 +8,8 @@
+ #include <dm.h>
+ #include <asm/io.h>
+ #include <asm/arch/cpu.h>
++#include <asm/arch/gpio.h>
++#include <asm/gpio.h>
+ #include <asm/arch/hardware.h>
+ #include <asm/arch/grf_rk3568.h>
+ #include <asm/arch/rk_atags.h>
+@@ -512,6 +514,29 @@ static struct mm_region rk3568_mem_map[] = {
+ struct mm_region *mem_map = rk3568_mem_map;
+ #endif
+ 
++
++void enable_emmc(void)
++{
++	int ret;
++	// gpio 2_C5
++	#define EMMC_nEN_GPIO (64 + 16 + 5)
++	printf("eMMC request:\n");
++	ret = gpio_request(EMMC_nEN_GPIO, "emmc enabled");
++
++	if (ret)
++	{
++		printf("error on gpio_request\n");
++	}
++	else
++	{
++		gpio_direction_output(EMMC_nEN_GPIO, 0);
++		//gpio_direction_input(EMMC_nEN_GPIO);
++		printf("eMMC enabled\n");
++		udelay(1000000);
++	}
++}
++
++
+ void board_debug_uart_init(void)
+ {
+ #if defined(CONFIG_DEBUG_UART_BASE) && (CONFIG_DEBUG_UART_BASE == 0xfdd50000)
+@@ -1207,7 +1232,7 @@ int rk_board_init(void)
+ {
+ 	struct udevice *dev;
+ 	u32 ret = 0;
+-
++	enable_emmc();
+ 	ret = uclass_get_device_by_driver(UCLASS_DMC, DM_GET_DRIVER(dmc_fsp), &dev);
+ 	if (ret) {
+ 		printf("dmc_fsp failed, ret=%d\n", ret);
+diff --git a/configs/rk3568_defconfig b/configs/rk3568_defconfig
+index db14f5e15055..1f93cc993595 100644
+--- a/configs/rk3568_defconfig
++++ b/configs/rk3568_defconfig
+@@ -104,6 +104,8 @@ CONFIG_RNG_ROCKCHIP=y
+ CONFIG_SCMI_FIRMWARE=y
+ CONFIG_ROCKCHIP_GPIO=y
+ CONFIG_ROCKCHIP_GPIO_V2=y
++CONFIG_SPL_GPIO_SUPPORT=y
++CONFIG_DM_GPIO=y
+ CONFIG_SYS_I2C_ROCKCHIP=y
+ CONFIG_DM_KEY=y
+ CONFIG_RK8XX_PWRKEY=y
+diff --git a/env/Kconfig b/env/Kconfig
+index 86afc2a2e634..e3e8f5248af2 100644
+--- a/env/Kconfig
++++ b/env/Kconfig
+@@ -2,6 +2,7 @@ menu "Environment"
+ 
+ choice
+ 	prompt "Select the location of the environment"
++	default ENV_IS_IN_MMC if ARCH_ROCKCHIP
+ 	default ENV_IS_IN_MMC if ARCH_SUNXI
+ 	default ENV_IS_IN_MMC if ARCH_UNIPHIER
+ 	default ENV_IS_IN_MMC if ARCH_EXYNOS4
+diff --git a/include/configs/evb_rk3568.h b/include/configs/evb_rk3568.h
+index f7318c3816b3..7d0f02a0f724 100644
+--- a/include/configs/evb_rk3568.h
++++ b/include/configs/evb_rk3568.h
+@@ -19,6 +19,8 @@
+ 
+ #define CONFIG_SYS_MMC_ENV_DEV		0
+ 
++#define CONFIG_ENV_OVERWRITE
++
+ #undef CONFIG_BOOTCOMMAND
+ #define CONFIG_BOOTCOMMAND RKIMG_BOOTCOMMAND
+ 

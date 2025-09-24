@@ -1,103 +1,106 @@
-# meta-engicam-rockchip
 
-This README file contains information on building and booting the meta-engicam-rockchip BSP layers.
+# meta-engicam-rockchip Layer
 
-Please see the corresponding sections below for details.
+This README file provides information about the contents of the **meta-engicam-rockchip** layer.
 
-## Dependencies
 
-This layer depends on:
+## Boards supported
 
-* URI: git://git.yoctoproject.org/poky
-* branch: honister
+|SOM                   |                BOARD                |
+|----------------------|-------------------------------------|
+|rk3568-icore          |starterkit 2.0                       |
+|rk3568-vboard         |VBoard SBC                           |
 
-* URI: https://github.com/openembedded/meta-openembedded.git
-* layers: meta-oe
-* branch: honister
+For more information, refer to:  
 
-* URI: https://github.com/JeffyCN/meta-rockchip.git
-* layers: meta-rockchip
-* branch: honister
+- [Starter Kit 2.0 Documentation](docs/starterkit2.0.md)
+- [VBoard Documentation](docs/vboard.md)
 
-## Table of Contents
 
-I. Configure yocto/oe Environment
 
-II. Building meta-engicam-rockchip BSP Layers
+# How to Build the Evaluation Image
 
-III. Booting your Device
+## Prepare the Environment
 
-IV. Tested Hardwares
+if you are planning to use a virtual environment on your linux machine please refear to [create distrobox image](docs/distrobox.md).
 
-V. Supporting new Machine
 
-### I. Configure yocto/oe Environment
+If the environment is already set up, you can skip to the [Rebuild the Image](#rebuild-the-image) section.
 
-In order to build an image with BSP support for a given release, you need to download the corresponding layers described in the "Dependencies" section. Be sure that everything is in the same directory.
+Clone the required repositories:
 
-```shell
-~ $ mkdir yocto; cd yocto
-~/yocto $ git clone git://git.yoctoproject.org/poky -b honister
-~/yocto $ cd poky
-~/yocto/poky $ git clone https://github.com/openembedded/meta-openembedded.git -b honister
-~/yocto/poky $ git clone https://github.com/JeffyCN/meta-rockchip.git -b honister
-~/yocto/poky $ cd meta-rockchip
-~/yocto/poky/meta-rockchip $ git checkout 7b13a4aecadcde002a1af9a246813c61ab6cc559
-~/yocto/poky/meta-rockchip $ cd ..
-~/yocto/poky $ git clone https://github.com/engicam-stable/meta-engicam-rockchip.git -b honister
+```bash
+git clone git://git.yoctoproject.org/poky -b scarthgap
+git clone git://git.openembedded.org/meta-openembedded -b scarthgap
+git clone https://github.com/JeffyCN/meta-rockchip -b scarthgap
+# Place the meta-engicam-rockchip layer in the same directory.
 ```
 
-And put the meta-engicam-rockchip layer here too.
+Initialize the build environment:
 
-Then you need to source the configuration script:
-
-```shell
-~/yocto $ source poky/oe-init-build-env
+```bash
+source poky/oe-init-build-env
 ```
 
-Having done that, you can build a image for a engicam board by adding the location of the meta-engicam-rockchip layer to bblayers.conf, along with any other layers needed.
+Edit your `bblayers.conf` file to include the following layers:
 
-For example:
-
-```makefile
+```conf
 # build/conf/bblayers.conf
 BBLAYERS ?= " \
+  ${TOPDIR}/../meta-rockchip \
   ${TOPDIR}/../poky/meta \
   ${TOPDIR}/../poky/meta-poky \
   ${TOPDIR}/../poky/meta-yocto-bsp \
-  ${TOPDIR}/../poky/meta-openembedded/meta-oe \
-  ${TOPDIR}/../poky/meta-rockchip \
-  ${TOPDIR}/../poky/meta-engicam-rockchip \
+  ${TOPDIR}/../meta-openembedded/meta-oe \
+  ${TOPDIR}/../meta-engicam-rockchip \
+"
 ```
 
-To enable a particular machine, you need to add a MACHINE line naming the BSP to the local.conf file:
+Set the machine in `local.conf`:
 
-```makefile
-  MACHINE = "px30-icore-starterkit"
-  DISTRO_FEATURES:remove += " x11"
+```conf
+MACHINE = "rk3568-icore"
 ```
 
-All supported machines can be found in **meta-engicam-rockchip/conf/machine**.
+or
 
-### II. Building meta-engicam-rockchip BSP Layers
-
-You should then be able to build a image as such:
-
-```shell
-$ bitbake engicam-image-weston
+```conf
+MACHINE = "rk3568-vboard"
 ```
 
-At the end of a successful build, you should have an .wic image in /path/to/yocto/build/tmp/deploy/\<MACHINE\>/.
 
-### III. Booting your Device
+Append the following line in the same file:
 
-```shell
-$ sudo dd if=engicam-image-weston-px30-icore.wic of=/dev/sdb bs=64M && sync
+```conf
+INHERIT:append = " rockchip-image"
 ```
 
-### IV. Tested Hardwares
+Then build the image:
 
-The following undergo regular basic testing with their respective MACHINE types.
+```bash
+bitbake engicam-evaluation-image
+```
 
-* px30 icore starterkit 2.0 board
-* px30 icore c.touch 2.0 board + AMP 10.1 inch Display
+or
+
+```bash
+bitbake vboard-evaluation-image
+```
+
+## Rebuild the Image
+
+If the environment is already configured, you can rebuild the image using:
+
+```bash
+source poky/oe-init-build-env
+```
+
+```bash
+bitbake engicam-evaluation-image
+```
+
+or
+
+```bash
+bitbake vboard-evaluation-image
+```
