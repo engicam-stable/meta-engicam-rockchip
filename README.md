@@ -8,7 +8,7 @@ This README file provides information about the contents of the **meta-engicam-r
 
 |SOM                   |                BOARD                |
 |----------------------|-------------------------------------|
-|rk3568-icore          |starterkit 2.0                       |
+|rk3568-icore          |[starterkit2.0](docs/test_sheet_rk3568_icore_starterkit.md)|
 |rk3568-vboard         |VBoard SBC                           |
 
 For more information, refer to:  
