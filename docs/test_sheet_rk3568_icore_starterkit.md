@@ -53,10 +53,10 @@ module: rk3568_icore
 
 ## Debug Console
 
-The console port is on J26 at 1500000 8n1:
+The console port is on J26 at 115200 8n1:
 
 ```bash
-tio /dev/ttyUSB0 -b 1500000
+tio /dev/ttyUSB0 -b 115200
 ```
 
 ---

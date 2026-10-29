@@ -6,16 +6,17 @@ This README file provides information about the contents of the **meta-engicam-r
 
 ## Boards supported
 
-|SOM                   |                BOARD                |
-|----------------------|-------------------------------------|
+|SOM                   |                BOARD                                      |
+|----------------------|-----------------------------------------------------------|
 |rk3568-icore          |[starterkit2.0](docs/test_sheet_rk3568_icore_starterkit.md)|
-|rk3568-vboard         |VBoard SBC                           |
+|rk3568-icore          |[CTouch 3.1](docs/test_sheet_rk3568_icore_ctouch3.1.md)      |
+|rk3568-vboard         |[VBoard SBC](docs/vboard.md)                               |
 
 For more information, refer to:  
 
 - [Starter Kit 2.0 Documentation](docs/starterkit2.0.md)
 - [VBoard Documentation](docs/vboard.md)
-
+- [Ctouch 3.1 Documentations](docs/test_sheet_rk3568_icore_ctouch3.1.md)
 
 
 # How to Build the Evaluation Image
@@ -62,12 +63,7 @@ Set the machine in `local.conf`:
 MACHINE = "rk3568-icore"
 ```
 
-or
-
-```conf
-MACHINE = "rk3568-vboard"
-```
-
+Selected from **Boards supported** list.
 
 Append the following line in the same file:
 

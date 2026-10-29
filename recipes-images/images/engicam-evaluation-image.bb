@@ -58,3 +58,8 @@ fix_bcm43430() {
 
 ROOTFS_POSTPROCESS_COMMAND:append = " fix_bcm43430;"
 
+
+# Partition layout: same as meta-rockchip generic-gptdisk, but with a
+# fixed-size boot partition (boot.img) to leave room for bigger kernels/dtbs.
+WKS_FILE = "engicam-gptdisk.wks.in"
+RK_BOOT_PART_SIZE ?= "64M"

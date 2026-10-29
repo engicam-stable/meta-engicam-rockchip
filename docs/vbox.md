@@ -6,12 +6,12 @@
 
 The console port is on J8. With the criteria:
 
-1500000 8,n,1
+115200 8,n,1
 
 es.
 
 ```bash
-tio /dev/ttyUSB0 -b 1500000
+tio /dev/ttyUSB0 -b 115200
 ```
 
 ## RS232 on J3
